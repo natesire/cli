@@ -1,0 +1,30 @@
+name: Windows Shims
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: npm
+      - name: Setup WSL
+        uses: Vampire/setup-wsl@v2.0.1
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@v4.0.1
+        with:
+          install-dir: C:\Windows\cygwin64
+      - name: Reset Deps
+        run: node . run resetdeps
+      - name: Test
+        run: node . test --ignore-scripts -- test/bin/windows-shims.js --no-coverage
