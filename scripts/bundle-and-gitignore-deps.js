@@ -3,7 +3,7 @@ const packlist = require('npm-packlist')
 const { join, relative } = require('path')
 const localeCompare = require('@isaacs/string-locale-compare')('en')
 const PackageJson = require('@npmcli/package-json')
-const { run, CWD, git, fs } = require('./util')
+const { run, CWD, git, fs, pkg: rootPkg } = require('./util')
 const npmGit = require('@npmcli/git')
 
 const ALWAYS_IGNORE = `
@@ -39,6 +39,8 @@ __pycache__
 .gitkeep
 *.map
 *.ts
+*.png
+*.jpg
 `
 
 const lsAndRmIgnored = async (dir) => {
@@ -70,15 +72,6 @@ const lsAndRmIgnored = async (dir) => {
 }
 
 const getAllowedPaths = (files) => {
-  // Get all files within node_modules and remove
-  // the node_modules/ portion of the path for processing
-  // since this list will go inside a gitignore at the
-  // root of the node_modules dir
-  const nmFiles = files
-    .filter(f => f.startsWith('node_modules/'))
-    .map(f => f.replace(/^node_modules\//, ''))
-    .sort(localeCompare)
-
   class AllowSegments {
     #segments
     #usedSegments
@@ -177,7 +170,7 @@ const getAllowedPaths = (files) => {
   }
 
   const allowPaths = new Set()
-  for (const file of nmFiles) {
+  for (const file of files) {
     for (const allow of gatherAllows(file.split('/'))) {
       allowPaths.add(allow)
     }
@@ -214,7 +207,19 @@ const main = async () => {
   await setBundleDeps()
 
   const arb = new Arborist({ path: CWD })
-  const files = await arb.loadActual().then(packlist)
+  const allFiles = await arb.loadActual().then(packlist)
+  const workspaceNames = (await rootPkg.mapWorkspaces()).map(p => p.name)
+  const isWorkspace = (p) => workspaceNames.some(w => p.startsWith(w + '/'))
+
+  // Get all files within node_modules and remove the node_modules/ portion of
+  // the path for processing since this list will go inside a gitignore at the
+  // root of the node_modules dir. It also removes workspaces since those are
+  // symlinks and should not be commited into source control.
+  const files = allFiles
+    .filter(f => f.startsWith('node_modules/'))
+    .map(f => f.replace(/^node_modules\//, ''))
+    .filter(f => !isWorkspace(f))
+    .sort(localeCompare)
 
   const ignoreFile = [
     '# Automatically generated to ignore everything except bundled deps',
