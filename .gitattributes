@@ -1,2 +1,25 @@
-/node_modules/**    linguist-generated=false
-/package-lock.json  linguist-generated=false
+# normalize all line endings by default
+* text=auto
+
+# ignore all line endings in node_modules since
+# we dont control what ends up in there
+/node_modules/** -text linguist-generated=false
+
+# our cmd scripts always need to be CRLF
+/bin/*.cmd text eol=crlf
+
+# our shell scripts always need to be LF
+/bin/npm text eol=lf
+/bin/npx text eol=lf
+
+# the files we write should be LF so they
+# can be generated cross platform without churn
+/node_modules/.gitignore text eol=lf
+/DEPENDENCIES.md text eol=lf
+/AUTHORS text eol=lf
+
+# fixture tarballs should be treated as binary
+test/fixtures/**/*.tgz binary
+
+# this makes our package-lock show up in pull requests
+/package-lock.json linguist-generated=false

@@ -38,7 +38,7 @@ jobs:
           node-version: 18.x
           cache: npm
       - name: Reset Deps
-        run: node . run resetdeps
+        run: node scripts/resetdeps.js
       - name: Lint
         run: node . run lint --ignore-scripts -w @npmcli/config
       - name: Post Lint
@@ -84,11 +84,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Reset Deps
-        run: node . run resetdeps
+        run: node scripts/resetdeps.js
       - name: Add Problem Matcher
         run: echo "::add-matcher::.github/matchers/tap.json"
       - name: Test
         run: node . test --ignore-scripts -w @npmcli/config
       - name: Check Git Status
-        if: matrix && matrix.platform.os != 'windows-latest'
         run: node scripts/git-dirty.js
