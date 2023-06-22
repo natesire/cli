@@ -96,7 +96,6 @@ t.test('run shims', t => {
       env: { PATH: path, npm_config_update_notifier: 'false' },
       cwd: path,
       windowsHide: true,
-      shell: true,
       ...opts,
     })
     result.stdout = result.stdout.toString().trim()
@@ -125,10 +124,10 @@ t.test('run shims', t => {
       } else if (cmd === 'pwsh') {
         cmd = which(cmd).split(sep).map(p => p.includes(' ') ? `"${p}"` : p).join(sep)
         args.push(`${bin}.ps1`, binArg)
+        opts.shell = true
       } else if (cmd.endsWith('bash.exe')) {
         // only cygwin *requires* the -l, but the others are ok with it
         args.push('-l', bin, binArg)
-        opts.shell = false
       }
       t.match(spawn(cmd, args, opts), {
         status: 0,
