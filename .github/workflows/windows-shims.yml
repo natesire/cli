@@ -28,3 +28,5 @@ jobs:
         run: node scripts/resetdeps.js
       - name: Test
         run: node . test --ignore-scripts -- test/bin/windows-shims.js --no-coverage
+        env:
+          WINDOWS_SHIM_TEST: fail
