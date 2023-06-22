@@ -110,7 +110,11 @@ t.test('run shims', t => {
   const matchSpawn = (t, cmd, bin = '', skip) => {
     const name = `${cmd} ${bin}`.trim()
     if (skip) {
-      t.skip(name, { diagnostic: true, reason: skip, cmd })
+      if (process.env.WINDOWS_SHIM_TEST === 'fail') {
+        t.fail(name)
+      } else {
+        t.skip(name, { diagnostic: true, reason: skip, cmd })
+      }
       return
     }
     t.test(name, t => {
